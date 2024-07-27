@@ -6,6 +6,7 @@ import { client } from "../client";
 import { sepolia } from "thirdweb/chains";
 import { formatEther } from "ethers";
 
+
 interface StateContextType {
   address: string | null;
   contract: any;
@@ -17,12 +18,25 @@ interface StateContextType {
   getDonations: (pId: number) => Promise<any>;
 }
 
-const StateContext = createContext<StateContextType | undefined>(undefined);
+const defaultContextValue: StateContextType = {
+  address: null,
+  contract: null,
+  connect: async () => {},
+  createCampaign: async () => {},
+  getCampaigns: async () => [],
+  getUserCampaigns: async () => [],
+  donate: async () => null,
+  getDonations: async () => [],
+};
+
+const StateContext = createContext<StateContextType>(defaultContextValue);
+
 
 export const StateContextProvider = ({ children }: { children: ReactNode }) => {
   const [address, setAddress] = useState<string | null>(null);
   const [contract, setContract] = useState<any>(null);
   const [account, setAccount] = useState<any>(null);
+
 
   useEffect(() => {
     const initialize = async () => {
@@ -137,18 +151,20 @@ export const StateContextProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
+  const contextValue: StateContextType = {
+    address,
+    contract,
+    connect,
+    createCampaign,
+    getCampaigns,
+    getUserCampaigns,
+    donate,
+    getDonations,
+  };
+  
+
   return (
-    <StateContext.Provider
-      value={{
-        address,
-        contract,
-        connect,
-        createCampaign,
-        getCampaigns,
-        getUserCampaigns,
-        donate,
-        getDonations,
-      }}>
+    <StateContext.Provider value={contextValue}>
       {children}
     </StateContext.Provider>
   );
