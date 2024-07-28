@@ -1,6 +1,6 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { parseUnits } from 'ethers/lib.esm/utils/units';
+import { ethers } from 'ethers';
 import { useStateContext } from '../context';
 import { money } from '../assets';
 import { CustomButton, FormField, Loader } from '../components';
@@ -18,7 +18,7 @@ interface Form {
 const CreateCampaign: React.FC = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const { createCampaign } = useStateContext();
+  const { createCampaign, address, contract } = useStateContext();
   const [form, setForm] = useState<Form>({
     name: '',
     title: '',
@@ -34,13 +34,31 @@ const CreateCampaign: React.FC = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log("Creating campaign :", form.title, form.description, form.target, form.deadline, form.image);
+
+    if (!address) {
+      alert('Please connect your wallet first');
+      return;
+    }
+
+    if (!contract) {
+      alert('Contract not initialized. Please try again later');
+      return;
+    }
 
     checkIfImage(form.image, async (exists) => {
       if (exists) {
         setIsLoading(true);
-        await createCampaign({ ...form, target: parseUnits(form.target, 18) });
-        setIsLoading(false);
-        navigate('/');
+        try {
+
+
+          await createCampaign(form.title, form.description, form.target, new Date(form.deadline).getTime(), form.image);
+          navigate('/');
+        } catch (error) {
+          console.error("Failed to create campaign:", error);
+        } finally {
+          setIsLoading(false);
+        }
       } else {
         alert('Provide valid image URL');
         setForm({ ...form, image: '' });
