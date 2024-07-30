@@ -145,7 +145,7 @@ export const StateContextProvider = ({ children }: { children: ReactNode }) => {
         title: campaign.title,
         description: campaign.description,
         target: formatEther(campaign.target.toString()), // Convert to Ether
-        deadline: new Date(Number(campaign.deadline) * 1000), // Convert to Date
+        deadline: new Date(Number(campaign.deadline)), // Convert to Date
         amountCollected: formatEther(campaign.amountCollected.toString()), // Convert to Ether
         image: campaign.image,
         pId: i,
@@ -162,6 +162,7 @@ export const StateContextProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const donate = async (pId: number, amount: string) => {
+    console.log("Donating to campaign with:", { pId, amount });
     const preparedTx = prepareContractCall({
       contract,
       method: [
@@ -169,9 +170,10 @@ export const StateContextProvider = ({ children }: { children: ReactNode }) => {
         [{ internalType: "uint256", name: "_id", type: "uint256" }],
         [],
       ],
-      params: [BigInt(pId), BigInt(toWei(amount))] as unknown as readonly [
+      params: [BigInt(pId)] as unknown as readonly [
         bigint
       ],
+      value: BigInt(toWei(amount)), // Ensure `amount` is in a valid format
     });
 
     const tx = await sendTransaction({
@@ -182,15 +184,46 @@ export const StateContextProvider = ({ children }: { children: ReactNode }) => {
     return tx;
   };
 
-  const getDonations = async (pId: number) => {
-    const donations = await contract.call("getDonators", [pId]);
-    const numberOfDonations = donations[0].length;
-
-    return donations[0].map((donator: any, i: number) => ({
-      donator,
-      donation: formatEther(donations[1][i].toString()),
-    }));
-  };
+  async function getDonations(pId: number) {
+    try {
+      const donations = await readContract({
+        contract: contract,
+        method: [
+          "0x0fa91fa9", // This is the method signature for "getDonators"
+          [
+            {
+              "internalType": "uint256",
+              "name": "_id",
+              "type": "uint256"
+            }
+          ],
+          [
+            {
+              "internalType": "address[]",
+              "name": "",
+              "type": "address[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "",
+              "type": "uint256[]"
+            }
+          ]
+        ],
+        params: [BigInt(pId)]
+      });
+  
+      const [donators, amounts] = donations;
+  
+      return donators.map((donator: string, i: number) => ({
+        donator,
+        donation: formatEther(amounts[i].toString()),
+      }));
+    } catch (error) {
+      console.error("Error fetching donations:", error);
+      return [];
+    }
+  }
 
   return (
     <StateContext.Provider

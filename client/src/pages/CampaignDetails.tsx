@@ -9,7 +9,7 @@ import { thirdweb } from '../assets';
 
 interface CampaignState {
   pId: string;
-  deadline: string;
+  deadline: Date;
   target: string;
   amountCollected: string;
   image: string;
@@ -28,7 +28,7 @@ interface Donator {
 
 const CampaignDetails: React.FC = () => {
   const location = useLocation();
-  const { state } = location.state as LocationState;
+  const { state } = location as unknown as LocationState;
   const navigate = useNavigate();
   const { donate, getDonations, contract, address } = useStateContext();
 
@@ -36,7 +36,8 @@ const CampaignDetails: React.FC = () => {
   const [amount, setAmount] = useState('');
   const [donators, setDonators] = useState<Donator[]>([]);
 
-  const remainingDays = daysLeft(state.deadline);
+  const remainingDays = daysLeft(new Date(state.deadline));
+
 
   const fetchDonators = async () => {
     const data = await getDonations(parseInt(state.pId));

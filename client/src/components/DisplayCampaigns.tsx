@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from "uuid";
 import FundCard from './FundCard';
 import { loader } from '../assets';
+import { daysLeft } from '../utils'; // Import the daysLeft function
 
 interface Campaign {
   owner: string;
@@ -28,22 +29,25 @@ const DisplayCampaigns: React.FC<DisplayCampaignsProps> = ({ title, isLoading, c
     navigate(`/campaign-details/${campaign.title}`, { state: campaign });
   }
   
+  // Filter campaigns with positive days left
+  const activeCampaigns = campaigns.filter(campaign => daysLeft(campaign.deadline) > 0);
+  
   return (
     <div>
-      <h1 className="font-epilogue font-semibold text-[18px] text-white text-left">{title} ({campaigns.length})</h1>
+      <h1 className="font-epilogue font-semibold text-[18px] text-white text-left">{title} ({activeCampaigns.length})</h1>
 
       <div className="flex flex-wrap mt-[20px] gap-[26px]">
         {isLoading && (
           <img src={loader} alt="loader" className="w-[100px] h-[100px] object-contain" />
         )}
 
-        {!isLoading && campaigns.length === 0 && (
+        {!isLoading && activeCampaigns.length === 0 && (
           <p className="font-epilogue font-semibold text-[14px] leading-[30px] text-[#818183]">
-            You have not created any campaigns yet
+            No active campaigns found
           </p>
         )}
 
-        {!isLoading && campaigns.length > 0 && campaigns.map((campaign) => (
+        {!isLoading && activeCampaigns.length > 0 && activeCampaigns.map((campaign) => (
           <FundCard 
             key={uuidv4()}
             {...campaign}
