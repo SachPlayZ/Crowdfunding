@@ -10,7 +10,7 @@ interface Campaign {
   title: string;
   description: string;
   target: string;
-  deadline: number;
+  deadline: string;
   amountCollected: string;
   image: string;
   pId: number;
@@ -30,7 +30,7 @@ const DisplayCampaigns: React.FC<DisplayCampaignsProps> = ({ title, isLoading, c
   }
   
   // Filter campaigns with positive days left
-  const activeCampaigns = campaigns.filter(campaign => daysLeft(campaign.deadline) > 0);
+  const activeCampaigns = campaigns.filter(campaign => parseInt(daysLeft(campaign.deadline)) > 0);
   
   return (
     <div>

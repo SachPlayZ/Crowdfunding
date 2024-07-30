@@ -8,7 +8,7 @@ interface FundCardProps {
   title: string;
   description: string;
   target: string;
-  deadline: number;
+  deadline: string;
   amountCollected: string;
   image: string;
   handleClick: () => void;
