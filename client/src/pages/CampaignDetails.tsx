@@ -36,7 +36,7 @@ const CampaignDetails: React.FC = () => {
   const [amount, setAmount] = useState('');
   const [donators, setDonators] = useState<Donator[]>([]);
 
-  const remainingDays = daysLeft(new Date(state.deadline));
+  const remainingDays = daysLeft(new Date(state.deadline).toString());
 
 
   const fetchDonators = async () => {

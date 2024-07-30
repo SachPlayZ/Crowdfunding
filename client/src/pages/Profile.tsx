@@ -8,7 +8,7 @@ interface Campaign {
   title: string;
   description: string;
   target: string;
-  deadline: number;
+  deadline: Date;
   amountCollected: string;
   image: string;
   pId: number;
